@@ -1,8 +1,17 @@
 Attribute VB_Name = "Refactorizado"
 
 Sub Programa_Rate_Tiger()
+Dim genius As String
+Dim expediavip As String
+Dim webloi As String
 
+
+webloi = "WEBLOI: Free Upgrade (subject to availability) Free Late Check out (2 hours late)"
+expediavip = "Vip - Premium VIP beneficios: 1 Free beverage per person for 2 (once per stay)"
+genius = "Genius: Free upgrade ( IMPORTANTE : Sujeto A Disponibilidad) "
 ActiveSheet.Range("B6").Select
+ActiveSheet.Range("E6").Value = "Extranet"
+ActiveSheet.Range("V6").Value = "Observaciones"
 Call Orden ' refactorizar
 Call columnasenblanco 'refactorizar
 Call BuscarTitulo("Channel ID", "Detail-Booked", "B6", "W6")
@@ -13,8 +22,23 @@ Call BuscarSiHayMasDeUnaReservaConMismoGds
 Call BuscarTitulo("Children", "Detail-Booked", "B6", "W6")
 Call ConvertirValores
 Call BuscarSiHayMenoresEnLaReserva
-Call BuscarTitulo("Channel", "Detail-Booked", "B6", "W6")
-Call buscar_reembolsabe_o_standard 'refactorizar
+Call BuscarTitulo("Extranet", "Detail-Booked", "B6", "W6")
+
+'---Cargo observaciones y Politicas -----------------------------------------------
+
+Call buscar_reembolsable_o_standard_Paga_Pax("Booking", "Non Refundable", genius)
+Call buscar_reembolsable_o_standard_Paga_Pax("Bookassist", "Non Refundable", webloi)
+Call ObservacionExpedia("Expedia", "Non Refundable", expediavip)
+Call ObservacionDespegar("Despegar.com", "PROMOS")
+Call ObservacionDespegar("Despegar", "PROMOS")
+Call ObservacionNtincoming("NTIncoming")
+Call ObservacionCuentaCorriente("almundo.com", "Reembolsable-No Reembolsable")
+Call ObservacionCuentaCorriente("Best Day", "Reembolsable-No Reembolsable")
+Call ObservacionCuentaCorriente("welcomebeds.com", "Reembolsable-No Reembolsable")
+Call ObservacionCuentaCorriente("Hotelbeds", "Reembolsable-No Reembolsable")
+
+'------------------------------------------------------------------------------------
+
 Call BuscarTitulo("Booked On", "Detail-Booked", "B6", "W6")
 Call ConvertirValores
 Call BuscarTitulo("Check-in", "Detail-Booked", "B6", "W6")
@@ -40,7 +64,7 @@ End Sub
 Sub BuscarTitulo(DatoAbuscar As String, NombreDeSolapaAbuscar As String, RangoInicio As String, RangoFin As String)
 
     Dim tituloEncontrado As Range
-        
+    Selection.SpecialCells(xlCellTypeVisible).Select
         With Worksheets(NombreDeSolapaAbuscar).Range(RangoInicio & ":" & RangoFin)
         
             Set tituloEncontrado = .Find(DatoAbuscar, LookIn:=xlValues)
@@ -155,7 +179,7 @@ Next celda
  
 End Sub
 
-Private Sub CorregirGds(Gds As String, cantidad_a_quitar As Byte)
+Private Sub CorregirGds(gds As String, cantidad_a_quitar As Byte)
 
 Dim celda As Range
 
@@ -164,7 +188,7 @@ Range(Selection, Selection.End(xlDown)).Select
     
     For Each celda In Selection
 
-        If celda.Value Like "*" & Gds & "*" Then
+        If celda.Value Like "*" & gds & "*" Then
         
            celda = Right(celda, cantidad_a_quitar)
             
@@ -238,224 +262,263 @@ Range(Selection, Selection.End(xlDown)).Select
     Selection.FormatConditions(1).StopIfTrue = False
 End Sub
 
-
-Private Sub buscar_reembolsabe_o_standard()
-
-Dim celda As Range
-Dim palabra As String
-Dim Observaciion_Bookassist_standard As String
-Dim Observacion_Bookassist_nrf As String
-Dim Observacion_despegar_nrf As String
-Dim Observacion_despegar_standard As String
-Dim Observacion_expedia_nrf As String
-Dim Observacion_expedia_standard As String
-Dim observacion_DOTW As String
-Dim Observacion_Globalia_nrf As String
-Dim Observacion_Globalia_standard As String
-Dim Observacion_Hotelbeds_standard As String
-Dim Observacion_Hotelbeds_nrf As String
-Dim observacion_NTincoming As String
-Dim observacion_welcomebeds_nrf As String
-Dim observacion_welcomebeds_standard As String
-Dim observaciones_Bestday As String
-Dim observaciones_almundo As String
-
-observaciones_almundo = "Alojamiento Cta Cte Al Mundo - Extras Paga Pax" _
+Function Observacion_Paga_Pax(channel As String, condicion As String, menores As Integer, beneficios As String)
+Observacion_Paga_Pax = channel & " Alojamiento y Extras Paga Pax" _
 & vbNewLine & "MAT o TWIN NO ACLARA" _
-& vbNewLine & "Condición de la reserva (Reembolsable - No reembolsable)" _
-& vbNewLine & "Solicitudes especiales: Cama extra / Vista especial / Piso alto / etc." _
-& vbNewLine & "Edad de los menores X/Y NO ACLARA  junto con gds"
+& vbNewLine & "Condición de la reserva (" & condicion & ")" _
+& vbNewLine & "Solicitudes especiales: " _
+& vbNewLine & "Menores = " & menores & " NO ACLARA Edad de los menores" _
+& vbNewLine & beneficios
+End Function
 
-observaciones_Bestday = "Alojamiento Cta Cte Hoteldo - Extras Paga Pax" _
+Function Observacion_Cuenta_Corriente(channel As String, condicion As String, menores As Integer)
+
+Observacion_Cuenta_Corriente = " Alojamiento Cta Cte " & channel _
 & vbNewLine & "MAT o TWIN NO ACLARA" _
-& vbNewLine & "Nacionalidad" _
-& vbNewLine & "Solicitudes especiales: Cama extra / Vista especial / Piso alto / etc." _
-& vbNewLine & "Edad de los menores X/Y NO ACLARA junto con gds"
+& vbNewLine & "Condición de la reserva (" & condicion & ")" _
+& vbNewLine & "Solicitudes especiales: " _
+& vbNewLine & "Menores = " & menores _
+& vbNewLine & "NO ACLARA Edad de los menores" _
 
-observacion_welcomebeds_nrf = "Alojamiento Cta Cte Welcome beds - Extras Paga Pax" _
+End Function
+
+Function Observacion_Expedia(channel As String, condicion As String, menores As Integer, beneficios As String)
+
+Observacion_Expedia = "A CARGO DEL PAX (Hotel Collects Payment)" _
+& vbNewLine & "A CARGO DE " & channel & "(" & channel & " Collects Payment)" _
+& vbNewLine & "Elegir el que corresponde" _
 & vbNewLine & "MAT o TWIN NO ACLARA" _
-& vbNewLine & "Condición de la reserva (No reembolsable)" _
-& vbNewLine & "Nacionalidad" _
-& vbNewLine & "Código de referencia / Localizador" _
-& vbNewLine & "Solicitudes especiales: Cama extra / Vista especial / Piso alto / etc." _
-& vbNewLine & "Edad de los menores X/Y NO ACLARA junto con gds"
+& vbNewLine & "Condición de la reserva (" & condicion & ")" _
+& vbNewLine & "Solicitudes especiales: " _
+& vbNewLine & "Menores = " & menores _
+& vbNewLine & "NO ACLARA Edad de los menores" _
+& vbNewLine & beneficios
 
-observacion_welcomebeds_standard = "Alojamiento Cta Cte Welcome beds - Extras Paga Pax" _
+End Function
+
+Function Observacion_Despegar(channel As String, condicion As String, menores As Integer)
+
+Observacion_Despegar = "A CARGO DEL PAX (Hotel Collects Payment)" _
+& vbNewLine & "A CARGO DE " & channel & "(" & channel & " Collects Payment)" _
+& vbNewLine & "Elegir el que corresponde" _
 & vbNewLine & "MAT o TWIN NO ACLARA" _
-& vbNewLine & "Condición de la reserva (Reembolsable)" _
-& vbNewLine & "Nacionalidad" _
-& vbNewLine & "Código de referencia / Localizador" _
-& vbNewLine & "Solicitudes especiales: Cama extra / Vista especial / Piso alto / etc." _
-& vbNewLine & "Edad de los menores X/Y NO ACLARA junto con gds"
+& vbNewLine & "Condición de la reserva (" & condicion & ")" _
+& vbNewLine & "Solicitudes especiales: " _
+& vbNewLine & "Menores = " & menores _
+& vbNewLine & "NO ACLARA Edad de los menores"
 
-observacion_NTincoming = "Alojamiento TC virtual W2M - Extras Paga Pax" _
+End Function
+Function Observacion_Ntincoming(channel As String, menores As Integer)
+
+Observacion_Ntincoming = "Alojamiento TC virtual W2M (" & channel & ") - Extras Paga Pax" _
  & vbNewLine & "MAT o TWIN NO ACLARA" _
- & vbNewLine & "Solicitudes especiales: Cama extra / Vista especial / Piso alto / etc" _
-& vbNewLine & "Edad de los menores X/Y NO ACLARA junto con gds"
+ & vbNewLine & "Solicitudes especiales:" _
+ & vbNewLine & "Menores = " & menores _
+ & vbNewLine & "NO ACLARA Edad de los menores"
 
-Observacion_Hotelbeds_standard = "Alojamiento Cta Cte Hotelbeds - Extras Paga Pax" _
-& vbNewLine & "Condición de la reserva (reembolsable)" _
-& vbNewLine & "MAT o TWIN NO ACLARA" _
-& vbNewLine & "Nacionalidad" _
-& vbNewLine & "Solicitudes especiales: Cama extra / Vista especial / Piso alto / etc." _
-& vbNewLine & "Edad de los menores X/Y NO ACLARA junto con gds Descuentos Aplicados"
-
-Observacion_Hotelbeds_nrf = "Alojamiento Cta Cte Hotelbeds - Extras Paga Pax" _
-& vbNewLine & "Condición de la reserva (No - reembolsable)" _
-& vbNewLine & "MAT o TWIN NO ACLARA" _
-& vbNewLine & "Nacionalidad" _
-& vbNewLine & "Solicitudes especiales: Cama extra / Vista especial / Piso alto / etc." _
-& vbNewLine & "Edad de los menores X/Y NO ACLARA junto con gds Descuentos Aplicados"
-
-observacion_DOTW = " Alojamiento NO DEFINIDO - Extras Paga Pax - " _
-& vbNewLine & "MAT o TWIN NO ACLARA" _
-& vbNewLine & "Condición de la reserva (Reembolsable - No reembolsable)" _
-& vbNewLine & "Solicitudes especiales: Cama extra / Vista especial / Piso alto / etc." _
-& vbNewLine & "Edad de los menores X/Y NO ACLARA junto con gds"
-
-Observaciion_Bookassist_standard = "Alojamiento y Extras Paga Pax" _
-& vbNewLine & "MAT o TWIN NO ACLARA" _
-& vbNewLine & "Condición de la reserva (Reembolsable)" _
-& vbNewLine & "Solicitudes especiales: WEBLOI Free Upgrade (subject to availability) Free Late Check out (2 hours late)" _
-& vbNewLine & "Edad de los menores X/Y NO ACLARA junto con gds"
+End Function
 
 
-Observacion_Bookassist_nrf = "Alojamiento y Extras Paga Pax" _
-& vbNewLine & "MAT o TWIN NO ACLARA" _
-& vbNewLine & "Condición de la reserva (No Reembolsable)" _
-& vbNewLine & "Solicitudes especiales: WEBLOI Free Upgrade (subject to availability) Free Late Check out (2 hours late)" _
-& vbNewLine & "Edad de los menores X/Y NO ACLARA junto con gds"
+Private Sub buscar_reembolsable_o_standard_Paga_Pax(channel As String, condicion As String, beneficio As String)
 
+Dim extranet As Range
+Dim menores As Integer
+Dim roomtype As String
+Dim observacion As String
+Dim reembolsable As String
+Dim gds As String
+Dim filainferior As String
+Dim filasuperior As String
 
-Observaciion_Booking_standard = "Alojamiento y Extras Paga Pax" _
-& vbNewLine & "MAT o TWIN NO ACLARA" _
-& vbNewLine & "Condición de la reserva (Reembolsable)" _
-& vbNewLine & "Solicitudes especiales: Genius: Free upgrade ( IMPORTANTE : Sujeto A Disponibilidad) " _
-& vbNewLine & "Edad de los menores X/Y NO ACLARA junto con gds"
+reembolsable = "Reembolsable"
 
-
-Observacion_Booking_nrf = "Alojamiento y Extras Paga Pax" _
-& vbNewLine & "MAT o TWIN NO ACLARA" _
-& vbNewLine & "Condición de la reserva (No Reembolsable)" _
-& vbNewLine & "Solicitudes especiales: Genius: Free upgrade ( IMPORTANTE : Sujeto A Disponibilidad) " _
-& vbNewLine & "Edad de los menores X/Y NO ACLARA junto con gds"
-
-
-Observacion_despegar_nrf = "Alojamiento Cta Cte Despegar - Extras Paga Pax" _
-& vbNewLine & "Alojamiento y Extras Paga Pax ELEGIR LA OPCION QUE CORRESPONDE" _
-& vbNewLine & "MAT o TWIN NO ACLARA" _
-& vbNewLine & "Condición de la reserva (No Reembolsable)" _
-& vbNewLine & "Edad de los menores X/Y NO ACLARA junto con gds"
-
-
-Observacion_despegar_standard = "Alojamiento Cta Cte Despegar - Extras Paga Pax" _
-& vbNewLine & "Alojamiento y Extras Paga Pax ELEGIR LA OPCION QUE CORRESPONDE" _
-& vbNewLine & "MAT o TWIN NO ACLARA" _
-& "Condición de la reserva ( Reembolsable)" _
-& vbNewLine & "Edad de los menores X/Y NO ACLARA junto con gds"
-
-
-
-Observacion_expedia_standard = "A CARGO DE EXPEDIA (Expedia Collects Payment)" _
-& vbNewLine & "Alojamiento TC virtual Expedia - Extras Paga Pax" _
-& vbNewLine & "MAT o TWIN NO ACLARA" _
-& vbNewLine & "Condición de la reserva (Reembolsable)" _
-& vbNewLine & "Solicitudes especiales: Vip - Premium VIP beneficios: 1 Free beverage per person for 2 (once per stay)" _
-& vbNewLine & "Edad de los menores X/Y NO ACLARA junto con gds" _
-& vbNewLine & "--------------------------------------------------" _
-& vbNewLine & "A CARGO DEL PAX (Hotel Collects Payment)" _
-& vbNewLine & "Alojamiento y Extras Paga Pax" _
-& vbNewLine & "MAT o TWIN NO ACLARA" _
-& vbNewLine & "Condición de la reserva (Reembolsable)" _
-& vbNewLine & "Solicitudes especiales: Vip - Premium VIP beneficios: 1 Free beverage per person for 2 (once per stay)" _
-& vbNewLine & "Edad de los menores X/Y NO ACLARA junto con gds"
-
-Observacion_expedia_nrf = "A CARGO DE EXPEDIA (Expedia Collects Payment)" _
-& vbNewLine & "Alojamiento TC virtual Expedia - Extras Paga Pax" _
-& vbNewLine & "MAT o TWIN NO ACLARA" _
-& vbNewLine & "Condición de la reserva (No Reembolsable)" _
-& vbNewLine & "Solicitudes especiales: Vip - Premium VIP beneficios: 1 Free beverage per person for 2 (once per stay)" _
-& vbNewLine & "Edad de los menores X/Y NO ACLARA junto con gds" _
-& vbNewLine & "--------------------------------------------------" _
-& vbNewLine & "A CARGO DEL PAX (Hotel Collects Payment)" _
-& vbNewLine & "Alojamiento y Extras Paga Pax" _
-& vbNewLine & "MAT o TWIN NO ACLARA" _
-& vbNewLine & "Condición de la reserva (No Reembolsable)" _
-& vbNewLine & "Solicitudes especiales: Vip - Premium VIP beneficios: 1 Free beverage per person for 2 (once per stay)" _
-& vbNewLine & "Edad de los menores X/Y NO ACLARA junto con gds"
-
+    
+    
     Range(Selection, Selection.End(xlDown)).Select
     
-    For Each celda In Selection
-
-       If celda = "Bookassist" And _
-       celda.Offset(0, 10).Value Like "*Non Refundable*" Then
-       celda.Offset(0, 17).Value = Observacion_Bookassist_nrf
-       ElseIf celda = "Bookassist" And _
-       celda.Offset(0, 10).Value <> "*Non Refundable*" Then
-       celda.Offset(0, 17).Value = Observaciion_Bookassist_standard
-              
-       ElseIf celda = "Booking" And _
-       celda.Offset(0, 10).Value Like "*Non Refundable*" Then
-       celda.Offset(0, 17).Value = Observacion_Booking_nrf
-       ElseIf celda = "Booking" And _
-       celda.Offset(0, 10).Value <> "*Non Refundable*" Then
-       celda.Offset(0, 17).Value = Observaciion_Booking_standard
-              
-       ElseIf celda = "Despegar" And _
-       celda.Offset(0, 10).Value Like "*MAYORISTA*" Then
-       celda.Offset(0, 17).Value = Observacion_despegar_standard
-       ElseIf celda = "Despegar" And _
-       celda.Offset(0, 10).Value <> "*MAYORISTA*" Then
-       celda.Offset(0, 17).Value = Observacion_despegar_nrf
-       
-       ElseIf celda = "Despegar.com" And _
-       celda.Offset(0, 10).Value Like "*MAYORISTA*" Then
-       celda.Offset(0, 17).Value = Observacion_despegar_standard
-       ElseIf celda = "Despegar.com" And _
-       celda.Offset(0, 10).Value <> "*MAYORISTA*" Then
-       celda.Offset(0, 17).Value = Observacion_despegar_nrf
-            
-       ElseIf celda = "DOTW" Then
-       celda.Offset(0, 17).Value = observacion_DOTW
- 
-       ElseIf celda = "Expedia" And _
-       celda.Offset(0, 10).Value Like "*Non Refundable*" Then
-       celda.Offset(0, 17).Value = Observacion_expedia_nrf
-       ElseIf celda = "Expedia" And _
-       celda.Offset(0, 10).Value <> "*Non Refundable*" Then
-       celda.Offset(0, 17).Value = Observacion_expedia_standard
-              
-       
-       ElseIf celda = "Hotelbeds" And _
-       celda.Offset(0, 10).Value Like "*NRF*" Then
-       celda.Offset(0, 17).Value = Observacion_Hotelbeds_nrf
-       ElseIf celda = "Hotelbeds" And _
-       celda.Offset(0, 10).Value <> "*NRF*" Then
-       celda.Offset(0, 17).Value = Observacion_Hotelbeds_standard
-          
-       ElseIf celda = "NTIncoming" Then
-       celda.Offset(0, 17).Value = observacion_NTincoming
-       
-       ElseIf celda = "welcomebeds.com" And _
-       celda.Offset(0, 10).Value Like "*BAR*" Then
-       celda.Offset(0, 17).Value = observacion_welcomebeds_nrf
-       ElseIf celda = "welcomebeds.com" And _
-       celda.Offset(0, 10).Value <> "*BAR*" Then
-       celda.Offset(0, 17).Value = observacion_welcomebeds_standard
-       
-       ElseIf celda = "Best Day" Then
-       celda.Offset(0, 17).Value = observaciones_Bestday
-              
-       ElseIf celda = "almundo.com" Then
-       celda.Offset(0, 17).Value = observaciones_almundo
-       
-       
-     End If
+    For Each extranet In Selection
+        menores = extranet.Offset(0, 14).Value
+        roomtype = extranet.Offset(0, 10).Value
+        gds = extranet.Offset(0, -1).Value
+        filainferior = extranet.Offset(1, -1).Value
+        filasuperior = extranet.Offset(-1, -1).Value
         
-    Next celda
+       If extranet = channel And _
+         roomtype Like "*" & condicion & "*" Then
+            extranet.Offset(0, 17).Value = Observacion_Paga_Pax(channel, condicion, menores, beneficio)
+            
+       ElseIf extranet = channel And roomtype <> "*" & condicion & "*" Then
+       extranet.Offset(0, 17).Value = Observacion_Paga_Pax(channel, reembolsable, menores, beneficio)
+       End If
+       
+       If extranet = channel And (gds = filainferior Or gds = filasuperior) _
+       And roomtype Like "*" & condicion & "*" Then
+       extranet.Offset(0, 17).Value = Observacion_Paga_Pax(channel, condicion, menores, beneficio) + " Junto Con Gds " & gds
+       
+       ElseIf extranet = channel And (gds = filainferior Or gds = filasuperior) _
+       And roomtype <> "*" & condicion & "*" Then
+       extranet.Offset(0, 17).Value = Observacion_Paga_Pax(channel, reembolsable, menores, beneficio) + " Junto Con Gds " & gds
+            
+       
+       End If
+       
+       
+    Next extranet
     
 End Sub
+
+Private Sub ObservacionExpedia(channel As String, condicion As String, beneficio As String)
+
+Dim extranet As Range
+Dim menores As Integer
+Dim roomtype As String
+Dim observacion As String
+Dim reembolsable As String
+Dim gds As String
+Dim filainferior As String
+Dim filasuperior As String
+
+reembolsable = "Reembolsable"
+
+    
+    
+    Range(Selection, Selection.End(xlDown)).Select
+    
+    For Each extranet In Selection
+        menores = extranet.Offset(0, 14).Value
+        roomtype = extranet.Offset(0, 10).Value
+        gds = extranet.Offset(0, -1).Value
+        filainferior = extranet.Offset(1, -1).Value
+        filasuperior = extranet.Offset(-1, -1).Value
+        
+       If extranet = channel And _
+         roomtype Like "*" & condicion & "*" Then
+            extranet.Offset(0, 17).Value = Observacion_Expedia(channel, condicion, menores, beneficio)
+              
+       ElseIf extranet = channel And _
+       roomtype <> "*" & condicion & "*" Then
+       extranet.Offset(0, 17).Value = Observacion_Expedia(channel, reembolsable, menores, beneficio)
+       End If
+       
+       If extranet = channel And (gds = filainferior Or gds = filasuperior) _
+       And roomtype Like "*" & condicion & "*" Then
+       extranet.Offset(0, 17).Value = Observacion_Expedia(channel, condicion, menores, beneficio) + " Junto Con Gds " & gds
+             
+       ElseIf extranet = channel And (gds = filainferior Or gds = filasuperior) _
+       And roomtype <> "*" & condicion & "*" Then
+       extranet.Offset(0, 17).Value = Observacion_Expedia(channel, reembolsable, menores, beneficio) + " Junto Con Gds " & gds
+       End If
+        
+    Next extranet
+    
+End Sub
+
+Private Sub ObservacionDespegar(channel As String, condicion As String)
+
+Dim extranet As Range
+Dim menores As Integer
+Dim roomtype As String
+Dim observacion As String
+Dim reembolsable As String
+Dim gds As String
+Dim filainferior As String
+Dim filasuperior As String
+
+reembolsable = "Reembolsable"
+
+    
+    
+    Range(Selection, Selection.End(xlDown)).Select
+    
+    For Each extranet In Selection
+        menores = extranet.Offset(0, 14).Value
+        roomtype = extranet.Offset(0, 10).Value
+        gds = extranet.Offset(0, -1).Value
+        filainferior = extranet.Offset(1, -1).Value
+        filasuperior = extranet.Offset(-1, -1).Value
+        
+       If extranet = channel And _
+         roomtype Like "*" & condicion & "*" Then
+            extranet.Offset(0, 17).Value = Observacion_Despegar(channel, condicion, menores)
+              
+       ElseIf extranet = channel And _
+       roomtype <> "*" & condicion & "*" Then
+       extranet.Offset(0, 17).Value = Observacion_Despegar(channel, reembolsable, menores)
+       End If
+       
+       If extranet = channel And (gds = filainferior Or gds = filasuperior) _
+       And roomtype Like "*" & condicion & "*" Then
+       extranet.Offset(0, 17).Value = Observacion_Despegar(channel, condicion, menores) + " Junto Con Gds " & gds
+             
+       ElseIf (extranet = channel) And (gds = filainferior Or gds = filasuperior) _
+       And roomtype <> "*" & condicion & "*" Then
+       extranet.Offset(0, 17).Value = Observacion_Despegar(channel, reembolsable, menores) + " Junto Con Gds " & gds
+       End If
+        
+    Next extranet
+    
+End Sub
+
+Private Sub ObservacionNtincoming(channel As String)
+
+Dim extranet As Range
+Dim menores As Integer
+Dim gds As String
+Dim filainferior As String
+Dim filasuperior As String
+    
+    
+    Range(Selection, Selection.End(xlDown)).Select
+    
+    For Each extranet In Selection
+        menores = extranet.Offset(0, 14).Value
+        gds = extranet.Offset(0, -1).Value
+        filainferior = extranet.Offset(1, -1).Value
+        filasuperior = extranet.Offset(-1, -1).Value
+        
+        If extranet = channel Then
+            extranet.Offset(0, 17).Value = Observacion_Ntincoming(channel, menores)
+        End If
+        
+        If extranet = channel And (gds = filainferior Or gds = filasuperior) Then
+        extranet.Offset(0, 17).Value = Observacion_Ntincoming(channel, menores) + " Junto Con Gds " & gds
+        End If
+        
+    Next extranet
+    
+End Sub
+
+
+Private Sub ObservacionCuentaCorriente(channel As String, condicion As String)
+
+Dim extranet As Range
+Dim menores As Integer
+Dim gds As String
+Dim filainferior As String
+Dim filasuperior As String
+    
+    
+    Range(Selection, Selection.End(xlDown)).Select
+    
+    For Each extranet In Selection
+        menores = extranet.Offset(0, 14).Value
+        gds = extranet.Offset(0, -1).Value
+        filainferior = extranet.Offset(1, -1).Value
+        filasuperior = extranet.Offset(-1, -1).Value
+        
+        If extranet = channel Then
+            extranet.Offset(0, 17).Value = Observacion_Cuenta_Corriente(channel, condicion, menores)
+        End If
+        
+        If extranet = channel And (gds = filainferior Or gds = filasuperior) Then
+        extranet.Offset(0, 17).Value = Observacion_Cuenta_Corriente(channel, condicion, menores) + " Junto Con Gds " & gds
+        End If
+        
+    Next extranet
+    
+End Sub
+
+
 
 Private Sub SumaIva()
 Dim celda As Range
@@ -516,4 +579,8 @@ For Each rate_plan In Selection
 
 End Sub
 
-
+Function obtenercolor1(celda As Range) As String
+Dim sColor As String
+sColor = Right("000000" & Hex(celda.Interior.Color), 6)
+obtenercolor1 = Right(sColor, 2) & Mid(sColor, 3, 2) & Left(sColor, 2)
+End Function
