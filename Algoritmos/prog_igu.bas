@@ -41,7 +41,7 @@ Call DE_LETRA_A_NUMERO
 ActiveSheet.Range("U6").Select
 ActiveCell.Offset(1, 0).Select
 Call DE_LETRA_A_NUMERO
-Call IVA
+Call iva
 
 
 ActiveSheet.Range("V6").Select
@@ -252,7 +252,7 @@ Dim Observacion_Globalia_nrf As String
 Dim Observacion_Globalia_standard As String
 Dim Observacion_Hotelbeds_standard As String
 Dim Observacion_Hotelbeds_nrf As String
-Dim observacion_NTincoming As String
+Dim Observacion_Ntincoming As String
 Dim observacion_welcomebeds_nrf As String
 Dim observacion_welcomebeds_standard As String
 Dim observaciones_Bestday As String
@@ -286,7 +286,7 @@ observacion_welcomebeds_standard = "Alojamiento Cta Cte Welcome beds - Extras Pa
 & vbNewLine & "Solicitudes especiales: Cama extra / Vista especial / Piso alto / etc." _
 & vbNewLine & "Edad de los menores X/Y NO ACLARA junto con gds"
 
-observacion_NTincoming = "Alojamiento TC virtual W2M - Extras Paga Pax" _
+Observacion_Ntincoming = "Alojamiento TC virtual W2M - Extras Paga Pax" _
  & vbNewLine & "MAT o TWIN NO ACLARA" _
  & vbNewLine & "Solicitudes especiales: Cama extra / Vista especial / Piso alto / etc" _
 & vbNewLine & "Edad de los menores X/Y NO ACLARA junto con gds"
@@ -433,7 +433,7 @@ Observacion_expedia_nrf = "A CARGO DE EXPEDIA (Expedia Collects Payment)" _
        celda.Offset(0, 17).Value = Observacion_Hotelbeds_standard
           
        ElseIf celda = "NTIncoming" Then
-       celda.Offset(0, 17).Value = observacion_NTincoming
+       celda.Offset(0, 17).Value = Observacion_Ntincoming
        
        ElseIf celda = "welcomebeds.com" And _
        celda.Offset(0, 10).Value Like "*BAR*" Then
@@ -455,7 +455,7 @@ Observacion_expedia_nrf = "A CARGO DE EXPEDIA (Expedia Collects Payment)" _
     
 End Sub
 
-Private Sub IVA()
+Private Sub iva()
 Dim celda As Range
 'ActiveCell.Offset(1, 0).Select
 Range(Selection, Selection.End(xlDown)).Select

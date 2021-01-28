@@ -13,16 +13,18 @@ Dim contacto As String
 Dim interno As String
 Dim mail As String
 Dim solapa_Excel As String
+Dim asunto As String
 Dim myAttachments As Outlook.Attachments
+Dim myAttachments2 As Outlook.Attachments
 '----------------------------------------
-i = 1
+i = 2
 
 
 
 'pido datos para llenar el pie de firma y el cuerpo del correo y lo convierto a tipo oracion.
 mi_Nombre = StrConv(InputBox("Ingresar Nombre y Apellido Del Ejecutivo"), vbProperCase)
 interno = InputBox("Interno Del Ejecutivo")
-mail = InputBox("Ingresar Mail Del Ejecutivo")
+mail = StrConv(InputBox("Ingresar Mail Del Ejecutivo"), vbLowerCase)
 solapa_Excel = StrConv(InputBox("Elegir Solapa Eze/Bren/George/Mati"), vbProperCase)
 
 'asigno el nombre de la pagina que voy a usar
@@ -33,7 +35,7 @@ pie_de_firma = "<h4>" & mi_Nombre & "</h4>" _
 & "<p>Ejecutivo de Reservas</p>" _
 & "<p>Loi Suites Hoteles</p>" _
 & "<p>+54-11-5777-8950 int " & interno & "</p>" _
-& "<a  href=" & mail & ">" & mail & "</a>" & " | " & "<a  href=" & "https://www.loisuites.com.ar >" & "www.loisuites.com.ar</a>"
+& "<a  href= mailto:" & mail & ">" & mail & "</a>" & " | " & "<a  href=" & "https://www.loisuites.com.ar >" & "www.loisuites.com.ar</a>"
 '-----------------------------------------------------------
 
 With Application
@@ -54,11 +56,18 @@ Set Correo = OutApp.CreateItem(0)
 
 'convierto a tipo oracion
 contacto = StrConv(pagina1.Range("A" & i).Value, vbProperCase)
+asunto = StrConv(pagina1.Range("A" & i).Value, vbProperCase)
 
 'adjunto el archivo
 Set myAttachments = Correo.Attachments
  myAttachments.Add "C:\Users\JORGE\Desktop\covid\Loi Suites_covid_flyer.png", _
  olByValue, 1, "Medidas De Higiene Y Seguridad"
+ myItem.Display
+ 
+
+ Set myAttachments2 = Correo.Attachments
+ myAttachments.Add "C:\Users\JORGE\Desktop\covid\Loisuites_2020_flyer_ventapesosflex_v2_1.png", _
+ olByValue, 1, "Ventas en Pesos"
  myItem.Display
  
 ContenidoMail = "<p>Buenos Dias, " & contacto & "</p>" _
@@ -71,12 +80,12 @@ ContenidoMail = "<p>Buenos Dias, " & contacto & "</p>" _
 
 'Crear el correo y mostrarlo
     With Correo
-        .To = pagina1.Range("B" & i).Value
+        .To = pagina1.Range("E" & i).Value
         '.CC = pagina1.Range("C9").Value
-        .Subject = "Propuesta de Alojamiento " & contacto
+        .Subject = "Propuesta de Alojamiento " & asunto
         .HTMLBody = "<HTML><BODY> " & ContenidoMail & " <FOOTER>" & pie_de_firma & "</FOOTER></BODY></HTML>"
         .Display
-        '.Send
+        .Send
     End With
     With Application
     .EnableEvents = True
@@ -104,15 +113,16 @@ Dim interno As String
 Dim mail As String
 Dim solapa_Excel As String
 Dim myAttachments As Outlook.Attachments
+Dim asunto As String
 '----------------------------------------
-i = 1
+i = 2
 
 
 
 'pido datos para llenar el pie de firma y el cuerpo del correo y lo convierto a tipo oracion.
 mi_Nombre = StrConv(InputBox("Ingresar Nombre y Apellido Del Ejecutivo"), vbProperCase)
 interno = InputBox("Interno Del Ejecutivo")
-mail = InputBox("Ingresar Mail Del Ejecutivo")
+mail = StrConv(InputBox("Ingresar Mail Del Ejecutivo"), vbLowerCase)
 solapa_Excel = StrConv(InputBox("Elegir Solapa Eze/Bren/George/Mati"), vbProperCase)
 
 'asigno el nombre de la pagina que voy a usar
@@ -123,7 +133,7 @@ pie_de_firma = "<h4>" & mi_Nombre & "</h4>" _
 & "<p>Ejecutivo de Reservas</p>" _
 & "<p>Loi Suites Hoteles</p>" _
 & "<p>+54-11-5777-8950 int " & interno & "</p>" _
-& "<a  href=" & mail & ">" & mail & "</a>" & " | " & "<a  href=" & "https://www.loisuites.com.ar >" & "www.loisuites.com.ar</a>"
+& "<a  href= mailto:" & mail & ">" & mail & "</a>" & " | " & "<a  href=" & "https://www.loisuites.com.ar >" & "www.loisuites.com.ar</a>"
 '-----------------------------------------------------------
 
 With Application
@@ -143,7 +153,8 @@ For Each celda In Selection
 Set Correo = OutApp.CreateItem(0)
 
 'convierto a tipo oracion
-contacto = StrConv(pagina1.Range("A" & i).Value, vbProperCase)
+contacto = StrConv(pagina1.Range("B" & i).Value, vbProperCase)
+asunto = StrConv(pagina1.Range("A" & i).Value, vbProperCase)
 
 'adjunto el archivo
 Set myAttachments = Correo.Attachments
@@ -168,12 +179,12 @@ ContenidoMail = "<p>Buenos Dias, " & contacto & "</p>" _
 
 'Crear el correo y mostrarlo
     With Correo
-        .To = pagina1.Range("B" & i).Value
+        .To = pagina1.Range("C" & i).Value
         '.CC = pagina1.Range("C9").Value
-        .Subject = "Propuesta de Alojamiento " & contacto
+        .Subject = "Propuesta de Alojamiento " & asunto
         .HTMLBody = "<HTML><BODY> " & ContenidoMail & " <FOOTER>" & pie_de_firma & "</FOOTER></BODY></HTML>"
         .Display
-        '.Send
+        .Send
     End With
     With Application
     .EnableEvents = True

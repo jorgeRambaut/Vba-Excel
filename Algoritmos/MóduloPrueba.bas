@@ -36,7 +36,7 @@ Dim StatusReserva As String
 Dim Huesped As String
 Dim PrecioRt As Double
 Dim PrecioTotalrt As Double
-Dim TipoDecambio As Double
+Dim tipoDeCambio As Double
 Dim FechaLlegada As Date
 Dim FechaSalida As Date
 Dim FechaInCm As Date

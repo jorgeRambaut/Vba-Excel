@@ -37,7 +37,7 @@ Private Sub calculo_totales_hab_Y_paxs()
 Dim celda As Range
 Dim fecha_in, fecha_out As Date
 Dim noches, HAB, noches_totales, fila, PAXS As Integer
-Dim RANGO As Object
+Dim rango As Object
 
 'automatico
 ActiveSheet.Range("A5").Select
@@ -124,8 +124,8 @@ Private Sub Formato_Tabla()
 Dim ultimaFila As Long
       
       'BUSCO ULTIMA FILA CON DATOS
-     ultimaFila = ActiveSheet.Columns("A").Find("*", _
-        searchorder:=xlByRows, searchdirection:=xlPrevious).Row
+        ultimaFila = ActiveSheet.Columns("A").Find("*", _
+        SearchOrder:=xlByRows, searchdirection:=xlPrevious).Row
                        
         'SELECCIONO RANGO AL QUE QUIERO DAR FORMATO
         Range("A5:O" & ultimaFila & "").Select

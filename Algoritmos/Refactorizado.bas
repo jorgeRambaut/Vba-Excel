@@ -1,28 +1,32 @@
 Attribute VB_Name = "Refactorizado"
 
 Sub Programa_Rate_Tiger()
+Attribute Programa_Rate_Tiger.VB_ProcData.VB_Invoke_Func = "i\n14"
 Dim genius As String
 Dim expediavip As String
 Dim webloi As String
+Dim solapa As String
 
-
+solapa = InputBox("Nombre de Hoja Excel")
 webloi = "WEBLOI: Free Upgrade (subject to availability) Free Late Check out (2 hours late)"
-expediavip = "Vip - Premium VIP beneficios: 1 Free beverage per person for 2 (once per stay)"
+expediavip = "Vip - Premium VIP beneficios: 1 Free beverage per person for 2 (once per stay) ECI sujeto a disponibilidad LCO confirmado hasta las 14hs Upgrade sujeto a disponibilidad"
 genius = "Genius: Free upgrade ( IMPORTANTE : Sujeto A Disponibilidad) "
+
 ActiveSheet.Range("B6").Select
 ActiveSheet.Range("E6").Value = "Extranet"
 ActiveSheet.Range("V6").Value = "Observaciones"
+
 Call Orden ' refactorizar
 Call columnasenblanco 'refactorizar
-Call BuscarTitulo("Channel ID", "Detail-Booked", "B6", "W6")
-Call ConvertirValores
+Call BuscarTitulo("Channel ID", solapa, "B6", "W6")
+Call ConvertirValores("Letra")
 Call CorregirGds("ARG", 7)
 Call CorregirGds("249-", 6)
 Call BuscarSiHayMasDeUnaReservaConMismoGds
-Call BuscarTitulo("Children", "Detail-Booked", "B6", "W6")
-Call ConvertirValores
+Call BuscarTitulo("Children", solapa, "B6", "W6")
+Call ConvertirValores("Numero")
 Call BuscarSiHayMenoresEnLaReserva
-Call BuscarTitulo("Extranet", "Detail-Booked", "B6", "W6")
+Call BuscarTitulo("Extranet", solapa, "B6", "W6")
 
 '---Cargo observaciones y Politicas -----------------------------------------------
 
@@ -34,46 +38,62 @@ Call ObservacionDespegar("Despegar", "PROMOS")
 Call ObservacionNtincoming("NTIncoming")
 Call ObservacionCuentaCorriente("almundo.com", "Reembolsable-No Reembolsable")
 Call ObservacionCuentaCorriente("Best Day", "Reembolsable-No Reembolsable")
-Call ObservacionCuentaCorriente("welcomebeds.com", "Reembolsable-No Reembolsable")
+'Call ObservacionCuentaCorriente("welcomebeds.com", "Reembolsable-No Reembolsable")
+Call Observacion_Welcomebeds("welcomebeds.com", "Reembolsable-No Reembolsable")
 Call ObservacionCuentaCorriente("Hotelbeds", "Reembolsable-No Reembolsable")
 
 '------------------------------------------------------------------------------------
 
-Call BuscarTitulo("Booked On", "Detail-Booked", "B6", "W6")
-Call ConvertirValores
-Call BuscarTitulo("Check-in", "Detail-Booked", "B6", "W6")
-Call ConvertirValores
-Call BuscarTitulo("Checkout", "Detail-Booked", "B6", "W6")
-Call ConvertirValores
-Call BuscarTitulo("Rooms", "Detail-Booked", "B6", "W6")
-Call ConvertirValores
-Call BuscarTitulo("Adults", "Detail-Booked", "B6", "W6")
-Call ConvertirValores
-Call BuscarTitulo("Avg. Daily Rate", "Detail-Booked", "B6", "W6")
-Call ConvertirValores
+Call BuscarTitulo("Booked On", solapa, "B6", "W6")
+Call ConvertirValores("Letra")
+Call BuscarTitulo("Check-in", solapa, "B6", "W6")
+Call ConvertirValores("Letra")
+Call BuscarTitulo("Checkout", solapa, "B6", "W6")
+Call ConvertirValores("Letra")
+Call BuscarTitulo("Rooms", solapa, "B6", "W6")
+Call ConvertirValores("Numero")
+Call BuscarTitulo("Adults", solapa, "B6", "W6")
+Call ConvertirValores("Numero")
+Call BuscarTitulo("iva incl", solapa, "B6", "W6")
+Call Reemplazar(".", ",")
 Call SumaIva
-Call BuscarTitulo("Special Request", "Detail-Booked", "B6", "W6")
+Call BuscarTitulo("Special Request", solapa, "B6", "W6")
 Call Ajustar_a_texto
-Call Descuentos_Hotelbeds("10444") 'Refactorizar
+Call BuscarTitulo("Room Type", solapa, "B6", "W6")
+Call Descuentos_Hotelbeds("17073", 20, 10)
+Call Descuentos_Hotelbeds("17074", 20, 10)
+Call Descuentos_Hotelbeds("17173", 20, 10)
+Call Descuentos_Hotelbeds("17177", descuento10porciento:=10, descuento5porciento:=5)
+Call Descuentos_Hotelbeds("10812", descuento10porciento:=10)
+
 
 ActiveSheet.Range("B3").Select
 
 'FIN
+
+
+MsgBox ("Procesos Finalizados")
+
+
 End Sub
 
-Sub BuscarTitulo(DatoAbuscar As String, NombreDeSolapaAbuscar As String, RangoInicio As String, RangoFin As String)
-
+Sub BuscarTitulo(DatoAbuscar As String, NombreDeSolapaAbuscar As String, RangoInicio As String, RangoFin As String, Optional libro As String)
     Dim tituloEncontrado As Range
     Selection.SpecialCells(xlCellTypeVisible).Select
-        With Worksheets(NombreDeSolapaAbuscar).Range(RangoInicio & ":" & RangoFin)
+    
         
-            Set tituloEncontrado = .Find(DatoAbuscar, LookIn:=xlValues)
-            
-                If Not tituloEncontrado Is Nothing Then
-                    tituloEncontrado.Offset(1, 0).Select
-                    Range(Selection, Selection.End(xlDown)).Select
-                End If
-        End With
+            With Worksheets(NombreDeSolapaAbuscar).Range(RangoInicio & ":" & RangoFin)
+                
+                    Set tituloEncontrado = .Find(DatoAbuscar, LookIn:=xlValues)
+                    
+                        If Not tituloEncontrado Is Nothing Then
+                            tituloEncontrado.Offset(1, 0).Select
+                            Range(Selection, Selection.End(xlDown)).Select
+                        End If
+            End With
+     
+       
+        
     
 End Sub
 
@@ -169,14 +189,20 @@ Private Sub columnasenblanco()
    
 End Sub
 
-Private Sub ConvertirValores()
+Sub ConvertirValores(valor As String)
 Dim celda As Range
 Range(Selection, Selection.End(xlDown)).Select
 'Selection.SpecialCells(xlCellTypeVisible).Select
-For Each celda In Selection
-celda = CStr(celda)
-Next celda
- 
+Select Case valor
+Case "Letra"
+    For Each celda In Selection
+    celda = CStr(celda)
+    Next celda
+Case "Numero"
+    For Each celda In Selection
+    celda = CInt(celda)
+    Next celda
+End Select
 End Sub
 
 Private Sub CorregirGds(gds As String, cantidad_a_quitar As Byte)
@@ -282,6 +308,19 @@ Observacion_Cuenta_Corriente = " Alojamiento Cta Cte " & channel _
 
 End Function
 
+Function Observacion_Welcomebeds_Tc(channel As String, condicion As String, menores As Integer)
+
+Observacion_Cobro_Tc = " Alojamiento Cobrar de La Tc " & channel _
+& vbNewLine & "MAT o TWIN NO ACLARA" _
+& vbNewLine & "Condición de la reserva (" & condicion & ")" _
+& vbNewLine & "Solicitudes especiales: " _
+& vbNewLine & "Menores = " & menores _
+& vbNewLine & "NO ACLARA Edad de los menores" _
+& vbNewLine & "TC: se activará el día del check in y tendrán hasta 15 días después del check out para cobrarla."
+
+
+End Function
+
 Function Observacion_Expedia(channel As String, condicion As String, menores As Integer, beneficios As String)
 
 Observacion_Expedia = "A CARGO DEL PAX (Hotel Collects Payment)" _
@@ -327,8 +366,8 @@ Dim roomtype As String
 Dim observacion As String
 Dim reembolsable As String
 Dim gds As String
-Dim filainferior As String
-Dim filasuperior As String
+Dim filaInferior As String
+Dim filaSuperior As String
 
 reembolsable = "Reembolsable"
 
@@ -340,8 +379,8 @@ reembolsable = "Reembolsable"
         menores = extranet.Offset(0, 14).Value
         roomtype = extranet.Offset(0, 10).Value
         gds = extranet.Offset(0, -1).Value
-        filainferior = extranet.Offset(1, -1).Value
-        filasuperior = extranet.Offset(-1, -1).Value
+        filaInferior = extranet.Offset(1, -1).Value
+        filaSuperior = extranet.Offset(-1, -1).Value
         
        If extranet = channel And _
          roomtype Like "*" & condicion & "*" Then
@@ -351,11 +390,11 @@ reembolsable = "Reembolsable"
        extranet.Offset(0, 17).Value = Observacion_Paga_Pax(channel, reembolsable, menores, beneficio)
        End If
        
-       If extranet = channel And (gds = filainferior Or gds = filasuperior) _
+       If extranet = channel And (gds = filaInferior Or gds = filaSuperior) _
        And roomtype Like "*" & condicion & "*" Then
        extranet.Offset(0, 17).Value = Observacion_Paga_Pax(channel, condicion, menores, beneficio) + " Junto Con Gds " & gds
        
-       ElseIf extranet = channel And (gds = filainferior Or gds = filasuperior) _
+       ElseIf extranet = channel And (gds = filaInferior Or gds = filaSuperior) _
        And roomtype <> "*" & condicion & "*" Then
        extranet.Offset(0, 17).Value = Observacion_Paga_Pax(channel, reembolsable, menores, beneficio) + " Junto Con Gds " & gds
             
@@ -375,8 +414,8 @@ Dim roomtype As String
 Dim observacion As String
 Dim reembolsable As String
 Dim gds As String
-Dim filainferior As String
-Dim filasuperior As String
+Dim filaInferior As String
+Dim filaSuperior As String
 
 reembolsable = "Reembolsable"
 
@@ -388,8 +427,8 @@ reembolsable = "Reembolsable"
         menores = extranet.Offset(0, 14).Value
         roomtype = extranet.Offset(0, 10).Value
         gds = extranet.Offset(0, -1).Value
-        filainferior = extranet.Offset(1, -1).Value
-        filasuperior = extranet.Offset(-1, -1).Value
+        filaInferior = extranet.Offset(1, -1).Value
+        filaSuperior = extranet.Offset(-1, -1).Value
         
        If extranet = channel And _
          roomtype Like "*" & condicion & "*" Then
@@ -400,11 +439,11 @@ reembolsable = "Reembolsable"
        extranet.Offset(0, 17).Value = Observacion_Expedia(channel, reembolsable, menores, beneficio)
        End If
        
-       If extranet = channel And (gds = filainferior Or gds = filasuperior) _
+       If extranet = channel And (gds = filaInferior Or gds = filaSuperior) _
        And roomtype Like "*" & condicion & "*" Then
        extranet.Offset(0, 17).Value = Observacion_Expedia(channel, condicion, menores, beneficio) + " Junto Con Gds " & gds
              
-       ElseIf extranet = channel And (gds = filainferior Or gds = filasuperior) _
+       ElseIf extranet = channel And (gds = filaInferior Or gds = filaSuperior) _
        And roomtype <> "*" & condicion & "*" Then
        extranet.Offset(0, 17).Value = Observacion_Expedia(channel, reembolsable, menores, beneficio) + " Junto Con Gds " & gds
        End If
@@ -421,8 +460,8 @@ Dim roomtype As String
 Dim observacion As String
 Dim reembolsable As String
 Dim gds As String
-Dim filainferior As String
-Dim filasuperior As String
+Dim filaInferior As String
+Dim filaSuperior As String
 
 reembolsable = "Reembolsable"
 
@@ -434,8 +473,8 @@ reembolsable = "Reembolsable"
         menores = extranet.Offset(0, 14).Value
         roomtype = extranet.Offset(0, 10).Value
         gds = extranet.Offset(0, -1).Value
-        filainferior = extranet.Offset(1, -1).Value
-        filasuperior = extranet.Offset(-1, -1).Value
+        filaInferior = extranet.Offset(1, -1).Value
+        filaSuperior = extranet.Offset(-1, -1).Value
         
        If extranet = channel And _
          roomtype Like "*" & condicion & "*" Then
@@ -446,11 +485,11 @@ reembolsable = "Reembolsable"
        extranet.Offset(0, 17).Value = Observacion_Despegar(channel, reembolsable, menores)
        End If
        
-       If extranet = channel And (gds = filainferior Or gds = filasuperior) _
+       If extranet = channel And (gds = filaInferior Or gds = filaSuperior) _
        And roomtype Like "*" & condicion & "*" Then
        extranet.Offset(0, 17).Value = Observacion_Despegar(channel, condicion, menores) + " Junto Con Gds " & gds
              
-       ElseIf (extranet = channel) And (gds = filainferior Or gds = filasuperior) _
+       ElseIf (extranet = channel) And (gds = filaInferior Or gds = filaSuperior) _
        And roomtype <> "*" & condicion & "*" Then
        extranet.Offset(0, 17).Value = Observacion_Despegar(channel, reembolsable, menores) + " Junto Con Gds " & gds
        End If
@@ -464,8 +503,8 @@ Private Sub ObservacionNtincoming(channel As String)
 Dim extranet As Range
 Dim menores As Integer
 Dim gds As String
-Dim filainferior As String
-Dim filasuperior As String
+Dim filaInferior As String
+Dim filaSuperior As String
     
     
     Range(Selection, Selection.End(xlDown)).Select
@@ -473,14 +512,14 @@ Dim filasuperior As String
     For Each extranet In Selection
         menores = extranet.Offset(0, 14).Value
         gds = extranet.Offset(0, -1).Value
-        filainferior = extranet.Offset(1, -1).Value
-        filasuperior = extranet.Offset(-1, -1).Value
+        filaInferior = extranet.Offset(1, -1).Value
+        filaSuperior = extranet.Offset(-1, -1).Value
         
         If extranet = channel Then
             extranet.Offset(0, 17).Value = Observacion_Ntincoming(channel, menores)
         End If
         
-        If extranet = channel And (gds = filainferior Or gds = filasuperior) Then
+        If extranet = channel And (gds = filaInferior Or gds = filaSuperior) Then
         extranet.Offset(0, 17).Value = Observacion_Ntincoming(channel, menores) + " Junto Con Gds " & gds
         End If
         
@@ -494,8 +533,8 @@ Private Sub ObservacionCuentaCorriente(channel As String, condicion As String)
 Dim extranet As Range
 Dim menores As Integer
 Dim gds As String
-Dim filainferior As String
-Dim filasuperior As String
+Dim filaInferior As String
+Dim filaSuperior As String
     
     
     Range(Selection, Selection.End(xlDown)).Select
@@ -503,15 +542,44 @@ Dim filasuperior As String
     For Each extranet In Selection
         menores = extranet.Offset(0, 14).Value
         gds = extranet.Offset(0, -1).Value
-        filainferior = extranet.Offset(1, -1).Value
-        filasuperior = extranet.Offset(-1, -1).Value
+        filaInferior = extranet.Offset(1, -1).Value
+        filaSuperior = extranet.Offset(-1, -1).Value
         
         If extranet = channel Then
             extranet.Offset(0, 17).Value = Observacion_Cuenta_Corriente(channel, condicion, menores)
         End If
         
-        If extranet = channel And (gds = filainferior Or gds = filasuperior) Then
+        If extranet = channel And (gds = filaInferior Or gds = filaSuperior) Then
         extranet.Offset(0, 17).Value = Observacion_Cuenta_Corriente(channel, condicion, menores) + " Junto Con Gds " & gds
+        End If
+        
+    Next extranet
+    
+End Sub
+
+Private Sub Observacion_Welcomebeds(channel As String, condicion As String)
+
+Dim extranet As Range
+Dim menores As Integer
+Dim gds As String
+Dim filaInferior As String
+Dim filaSuperior As String
+    
+    
+    Range(Selection, Selection.End(xlDown)).Select
+    
+    For Each extranet In Selection
+        menores = extranet.Offset(0, 14).Value
+        gds = extranet.Offset(0, -1).Value
+        filaInferior = extranet.Offset(1, -1).Value
+        filaSuperior = extranet.Offset(-1, -1).Value
+        
+        If extranet = channel Then
+            extranet.Offset(0, 17).Value = Observacion_Welcomebeds_Tc(channel, condicion, menores)
+        End If
+        
+        If extranet = channel And (gds = filaInferior Or gds = filaSuperior) Then
+        extranet.Offset(0, 17).Value = Observacion_Welcomebeds_Tc(channel, condicion, menores) + " Junto Con Gds " & gds
         End If
         
     Next extranet
@@ -532,52 +600,60 @@ Next celda
 
 End Sub
 
-Private Sub Descuentos_Hotelbeds(ratePlan As String)
-'TODO VER CUALES SON LOS RATE PLAN PARA ESMERALDA
-Dim descuento_del_20 As Double
-Dim descuento_del_5 As Double
-Dim descuento_del_10 As Double
+Private Sub Descuentos_Hotelbeds(ratePlan As String, Optional descuento20porciento _
+As Double, Optional descuento10porciento As Double, Optional descuento5porciento As Double)
+
 Dim Calculo_descuentos As Double
 Dim rate_plan As Range
 
-'automatico
-ActiveSheet.Range("P6").Select
-ActiveCell.Offset(1, 0).Select
-Range(Selection, Selection.End(xlDown)).Select
-'Selection.SpecialCells(xlCellTypeVisible).Select
-' -----------------CALCULA DESCUENTOS HOTELBDES----------------------------------
-For Each rate_plan In Selection
+'descuento20porciento = descuento20porciento / 100
+'descuento10porciento = descuento10porciento / 100
+'descuento5porciento = descuento5porciento / 100
 
-   If rate_plan.Value Like "*" & ratePlan & "*" Then
-        descuento_del_20 = 20
-        descuento_del_10 = 10
-        descuento_del_20 = (rate_plan.Offset(0, 5).Value * descuento_del_20) / 100
-        descuento_del_10 = ((rate_plan.Offset(0, 5).Value - descuento_del_20) * descuento_del_10) / 100
-        Calculo_descuentos = ((rate_plan.Offset(0, 5).Value - descuento_del_20) - descuento_del_10)
-        rate_plan.Offset(0, 5).Value = Calculo_descuentos
-               
-        
-        
-'                ElseIf rate_plan.Value Like "*17177*" Then
-'                descuento_del_5 = 5
-'                descuento_del_10 = 10
-'                descuento_del_5 = (rate_plan.Offset(0, 5).Value * descuento_del_5) / 100
-'                descuento_del_10 = ((rate_plan.Offset(0, 5).Value - descuento_del_5) * descuento_del_10) / 100
-'                Calculo_descuentos = ((rate_plan.Offset(0, 5).Value - descuento_del_5) - descuento_del_10)
-'                rate_plan.Offset(0, 5).Value = Calculo_descuentos
-'
-'                    ElseIf rate_plan.Value Like "*10812*" Then
-'                    descuento_del_10 = 10
-'                    descuento_del_10 = (rate_plan.Offset(0, 5).Value * descuento_del_10) / 100
-'                    Calculo_descuentos = (rate_plan.Offset(0, 5).Value - descuento_del_10)
-'                    rate_plan.Offset(0, 5).Value = Calculo_descuentos
-'
-                       
-        End If
+' -----------------CALCULA DESCUENTOS HOTELBDES----------------------------------
+    For Each rate_plan In Selection
     
+           If rate_plan.Value Like "*" & ratePlan & "*" Then
+                
+                descuento20porciento = rate_plan.Offset(0, 6).Value * (descuento20porciento / 100)
+                descuento10porciento = ((rate_plan.Offset(0, 6).Value - descuento20porciento) * (descuento10porciento / 100))
+                descuento5porciento = (((rate_plan.Offset(0, 6).Value - descuento20porciento) - descuento10porciento) * (descuento5porciento / 100))
+                Calculo_descuentos = ((rate_plan.Offset(0, 6).Value - descuento20porciento) - descuento10porciento) - descuento5porciento
+                rate_plan.Offset(0, 6).Value = Calculo_descuentos
+           
+           
+                        '-------Resetear % --------------
+                        If descuento20porciento <> 0 Then
+                        
+                            descuento20porciento = 20#
+                            
+                        End If
+                        
+                        If descuento10porciento <> 0 Then
+                        
+                            descuento10porciento = 10#
+                            
+                        End If
+                        
+                        If descuento5porciento <> 0 Then
+                        
+                            descuento5porciento = 5#
+                            
+                        End If
+                    '-------Fin % ----------------------
+                       
+          End If
+                        
     Next
 
 End Sub
+
+Sub Reemplazar(dato_a_reemplazar As String, valor_reemplazo As String)
+
+    Cells.Replace What:=dato_a_reemplazar, Replacement:=valor_reemplazo, LookAt:=xlPart, SearchOrder _
+        :=xlByRows, MatchCase:=False, SearchFormat:=False, ReplaceFormat:=False
+End Sub
+
 
 Function obtenercolor1(celda As Range) As String
 Dim sColor As String
